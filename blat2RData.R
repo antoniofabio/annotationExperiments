@@ -1,0 +1,62 @@
+#! /usr/bin/env Rscript
+
+fileNames <- commandArgs(trailingOnly=TRUE)
+## rfaFile <- "hum.rfa"
+## faFile <- "HG-U133_Plus_2.fa"
+rfaFile <- fileNames[1]
+faFile <- fileNames[2]
+pslFile <- gsub("^(.*)\\.fa$", "\\1.psl", faFile)
+pslFile.RData <- paste(pslFile, ".RData", sep="")
+
+cmd <- sprintf("blat -noHead -minIdentity=100 -stepSize=7 %s %s %s",
+               shQuote(rfaFile), shQuote(faFile), shQuote(pslFile))
+message('executing shell command:')
+message(shQuote(cmd))
+system(cmd)
+
+## matches int unsigned ,       # Number of bases that match that aren't repeats
+## misMatches int unsigned ,    # Number of bases that don't match
+## repMatches int unsigned ,     # Number of bases that match but are part of repeats
+## nCount int unsigned ,           # Number of 'N' bases
+## qNumInsert int unsigned ,     # Number of inserts in query
+## qBaseInsert int unsigned ,     # Number of bases inserted in query
+## tNumInsert int unsigned ,      # Number of inserts in target
+## tBaseInsert int unsigned ,      # Number of bases inserted in target
+## strand char(2) ,                # + or - for query strand, optionally followed by + or – for target strand
+## qName varchar(255) ,           # Query sequence name
+## qSize int unsigned ,            # Query sequence size
+## qStart int unsigned ,         # Alignment start position in query
+## qEnd int unsigned ,             # Alignment end position in query
+## tName varchar(255) ,           # Target sequence name
+## tSize int unsigned ,            # Target sequence size
+## tStart int unsigned ,           # Alignment start position in target
+## tEnd int unsigned ,             # Alignment end position in target
+## blockCount int unsigned ,    # Number of blocks in alignment
+## blockSizes longblob ,        # Size of each block in a comma separated list
+## qStarts longblob ,      # Start of each block in query in a comma separated list
+## tStarts longblob ,      # Start of each block in target in a comma separated list
+
+colNames <- c("matches", "misMatches", "repMatches", "nCount",
+              "qNumInsert", "qBaseInsert",
+              "tNumInsert", "tBaseInsert",
+              "strand",
+              "qName", "qSize", "qStart", "qEnd",
+              "tName", "tSize", "tStart", "tEnd",
+              "blockCount", "blockSizes",
+              "qStarts", "tStarts")
+colClasses <- structure(rep("NULL", length(colNames)), names=colNames)
+colClasses[c('qName', 'tName')] <- "character"
+colClasses['strand'] <- "factor"
+colClasses[c('matches', 'qSize', 'tSize')] <- "integer"
+
+psl <- read.delim(pslFile, header=FALSE, colClasses=colClasses,
+                  col.names=colNames)
+
+psl <- within(psl, {
+  probeset <- gsub("^(.*)\\|.*$", "\\1", qName)
+  geneID <- gsub("^.*\\|(.*)$", "\\1", tName)
+  refSeq <- gsub("^(.*)\\|.*$", "\\1", tName)
+  score <- matches / qSize
+})
+
+save(psl, file=pslFile.RData)
