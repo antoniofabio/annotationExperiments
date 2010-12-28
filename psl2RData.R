@@ -1,18 +1,13 @@
 #! /usr/bin/env Rscript
 
-fileNames <- commandArgs(trailingOnly=TRUE)
-## rfaFile <- "hum.rfa"
-## faFile <- "HG-U133_Plus_2.fa"
-rfaFile <- fileNames[1]
-faFile <- fileNames[2]
-pslFile <- gsub("^(.*)\\.fa$", "\\1.psl", faFile)
-pslFile.RData <- paste(pslFile, ".RData", sep="")
+##
+## Reads a '.psl' blat output file (with no header section) into an R dataframe
+## with readable variable names, and saves it into an RData file
+##
 
-cmd <- sprintf("blat -noHead -minIdentity=100 -stepSize=7 %s %s %s",
-               shQuote(rfaFile), shQuote(faFile), shQuote(pslFile))
-message('executing shell command:')
-message(shQuote(cmd))
-system(cmd)
+fileNames <- commandArgs(trailingOnly=TRUE)
+pslFile <- fileNames[1]
+pslFile.RData <- paste(pslFile, ".RData", sep="")
 
 ## matches int unsigned ,       # Number of bases that match that aren't repeats
 ## misMatches int unsigned ,    # Number of bases that don't match
