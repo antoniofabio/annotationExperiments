@@ -1,13 +1,41 @@
 #! /usr/bin/env Rscript
 
-##
-## Reads a '.psl' blat output file (with no header section) into an R dataframe
-## with readable variable names, and saves it into an RData file
-##
+args <- commandArgs(trailingOnly=TRUE)
 
-fileNames <- commandArgs(trailingOnly=TRUE)
-pslFile <- fileNames[1]
-pslFile.RData <- paste(pslFile, ".RData", sep="")
+usage <- function() {
+  message("Reads a '.psl' blat output file (with no header section) into an R dataframe
+with readable variable names, and saves it into an RData file
+
+usage:
+./psl2RData.R fileName.psl fileName.RData
+
+ fileName.psl: name of the input file, in '.psl' blat format
+ fileName.RData: name of the RData output file (default: 'fileName.psl.RData')
+
+= Details =
+Query sequence names are assumed to be in the 'probesetName|probeName' format,
+while target sequence names are assumed to be in the 'SequenceID|GeneID' format.
+Starting from this assumption, an attempt is made to extract 'probesetName' and
+'GeneID' directly.
+
+A new variable 'score' is computed, equal to the number of matches divided by the
+query sequence size.
+")
+}
+
+cargs <- length(args)
+if(cargs < 1 || cargs > 2) {
+  message("wrong number of arguments (", cargs, ")\n")
+  usage()
+  quit(save="no", status=1)
+}
+
+pslFile <- args[1]
+if(cargs < 2) {
+  pslFile.RData <- paste(pslFile, ".RData", sep="")
+} else {
+  pslFile.RData <- args[2]
+}
 
 ## matches int unsigned ,       # Number of bases that match that aren't repeats
 ## misMatches int unsigned ,    # Number of bases that don't match
