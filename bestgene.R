@@ -29,15 +29,20 @@ if(cargs < 2) {
 }
 
 load(pslFile.RData)
-psl <- subset(psl, score == 1)
-genes <- with(psl, tapply(geneID, probeset, function(x) {
-  ans <- unique(x)
-  if(length(ans) > 1) {
-    return(NA_character_)
-  } else {
-    return(ans)
+## psl <- subset(psl, score == 1)
+psl <- subset(psl, strand == "+")
+genes <- by(psl, psl$probeset, function(D) {
+  if(length(unique(D$geneID))==1) {
+    return(D$geneID[1])
   }
-}))
+  scores <- with(D, tapply(matches, geneID, sum, na.rm=TRUE))
+  scores <- sort(scores, decreasing=TRUE)
+  if(scores[1] > 2*scores[2]) {
+    return(names(scores)[1])
+  } else {
+    return(NA_character_)
+  }
+}, simplify=TRUE)
 genes <- genes[!is.na(genes)]
 
 save(genes, file=geneInfoFile)
