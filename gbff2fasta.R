@@ -1,6 +1,17 @@
 #! /usr/bin/env Rscript
 
 args <- commandArgs(trailingOnly=TRUE)
+cargs <- length(args)
+
+if(cargs != 1) {
+  message("Extracts refseq sequences from a '.gbff' file, in fasta format
+
+usage:
+
+./gbff2fasta.R fileName.gbff > fileName.rfa
+")
+  quit("no", status=1)
+}
 con <- file(args[1], "r")
 
 status <- 0
