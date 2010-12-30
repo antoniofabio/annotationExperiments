@@ -1,4 +1,5 @@
-TARGETS := $(patsubst ./%.fa,current/%.gene_info.RData,$(shell find . -name "*.fa"))
+TARGETS := $(patsubst ./%.fa,current/%.gene_info.RData,$(shell find . -name "*.fa")) \
+	$(patsubst %.gbff,%.gene_info.RData,$(shell find current/refseq -name "*.gbff"))
 
 .PHONY: all show-targets
 
@@ -21,3 +22,6 @@ current/%.psl.RData: current/%.psl
 
 current/%.gene_info.RData: current/%.psl.RData ./bestgene.R
 	./bestgene.R $< $@
+
+current/refseq/%.gene_info.RData: current/refseq/%.gbff gbff2RData.R
+	./gbff2RData.R $< $@
