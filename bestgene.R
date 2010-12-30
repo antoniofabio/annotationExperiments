@@ -30,7 +30,7 @@ if(cargs < 2) {
 
 load(pslFile.RData)
 ## psl <- subset(psl, score == 1)
-psl <- subset(psl, strand == "+")
+## psl <- subset(psl, strand == "+")
 genes <- by(psl, psl$probeset, function(D) {
   if(length(unique(D$geneID))==1) {
     return(D$geneID[1])
