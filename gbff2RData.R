@@ -56,7 +56,8 @@ mungeBlock <- function(block) {
 gene_info <- as.data.frame(t(vapply(blocks, mungeBlock,
                                     c(unlist(vars.simple),
                                       unlist(vars.features),
-                                      geneID=""))))
+                                      geneID=""))),
+                           stringsAsFactors = FALSE)
 
 gene_info$ACCESSION.VERSION <- gsub("^(.*?) +.*$", "\\1", gene_info$VERSION)
 
