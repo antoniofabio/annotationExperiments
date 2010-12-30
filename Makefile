@@ -11,16 +11,16 @@ all: $(TARGETS)
 show-targets:
 	@echo $(TARGETS)
 
-%.rfa: %.gbff
+%.rfa: %.gbff gbff2fasta.R
 	./gbff2fasta.R $< > $@
 
-current/%.psl: current/refseq/hum.rfa %.fa
-	./blat.R $^ $@
+current/%.psl: current/refseq/hum.rfa %.fa blat.R
+	./blat.R $(wordlist 1,2,$^) $@
 
-current/%.psl.RData: current/%.psl
+current/%.psl.RData: current/%.psl psl2RData.R
 	./psl2RData.R $< $@
 
-current/%.gene_info.RData: current/%.psl.RData ./bestgene.R
+current/%.gene_info.RData: current/%.psl.RData bestgene.R
 	./bestgene.R $< $@
 
 current/refseq/%.gene_info.RData: current/refseq/%.gbff gbff2RData.R
