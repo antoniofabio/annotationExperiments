@@ -52,6 +52,7 @@ fieldMultipleLines <- function(name) {
   ans <- shQuote(paste(ans, collapse=" "))
   return(ans)
 }
+
 origin <- function() {
   expectHead("ORIGIN")
   getLine()
@@ -65,7 +66,35 @@ origin <- function() {
   getLine()
   return(ans)
 }
+
 dump <- function(x) cat(x, "\t", sep="")
+
+feat.slash <- function() {
+  ll <- tail()
+  ans <- gsub("/.+=\"(.*)\"$", "\\1", ll)
+  getLine()
+  return(ans)
+}
+
+features <- function() {
+  expectHead("FEATURES")
+  getLine() ## source
+  getLine()
+  dump(feat.slash()) ## organism
+  dump(feat.slash()) ## mol_type
+  feat.slash()       ## db_xref
+  dump(feat.slash()) ## chromosome
+  dump(feat.slash()) ## map
+  getLine()          ## gene
+  dump(feat.slash()) ## symbol
+  dump(feat.slash()) ## synonym
+  dump(feat.slash()) ## note
+  cat(gsub("^GeneID:(.*)$", "\\1", feat.slash())) ## GeneID
+  while(indentation() > 0) {
+    getLine()
+  }
+}
+
 entry <- function() {
   dump(fieldOneLine("LOCUS"))
   dump(fieldOneLine("DEFINITION"))
@@ -77,11 +106,12 @@ entry <- function() {
     fieldMultipleLines("REFERENCE")
   }
   dump(fieldMultipleLines("COMMENT"))
-  fieldMultipleLines("FEATURES") ## just discard the 'features' for now
-  cat(origin(), "\n", sep="")
+  features()
+  origin()
+  cat("\n")
 }
 
-cat("LOCUS\tDEFINITION\tACCESSION\tVERSION\tKEYWORDS\tSOURCE\tCOMMENT\tORIGIN\n")
+cat("LOCUS\tDEFINITION\tACCESSION\tVERSION\tKEYWORDS\tSOURCE\tCOMMENT\torganism\tmol_type\tchromosome\tmap\tsymbol\tsynonym\tnote\tGeneID\n")
 getLine()
 while(length(line) > 0) {
   entry()
