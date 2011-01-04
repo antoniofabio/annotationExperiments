@@ -31,11 +31,12 @@ if(cargs < 2) {
 load(pslFile.RData)
 ## psl <- subset(psl, score == 1)
 ## psl <- subset(psl, strand == "+")
+psl$geneStrand <- with(psl, ifelse(strand == "-", paste(geneID, strand, sep="."), geneID))
 genes <- by(psl, psl$probeset, function(D) {
-  if(length(unique(D$geneID))==1) {
-    return(D$geneID[1])
+  if(length(unique(D$geneStrand))==1) {
+    return(D$geneStrand[1])
   }
-  scores <- with(D, tapply(matches, geneID, sum, na.rm=TRUE))
+  scores <- with(D, tapply(matches, geneStrand, sum, na.rm=TRUE))
   scores <- sort(scores, decreasing=TRUE)
   if(scores[1] > 2*scores[2]) {
     return(names(scores)[1])
@@ -44,5 +45,7 @@ genes <- by(psl, psl$probeset, function(D) {
   }
 }, simplify=TRUE)
 genes <- genes[!is.na(genes)]
+strand <- ifelse(grepl("^[0-9]+\\.-$", genes), "-", "+")
+genes <- gsub("^([0-9]+)\\.-$", "\\1", genes)
 
-save(genes, file=geneInfoFile)
+save(genes, strand, file=geneInfoFile)
