@@ -36,8 +36,15 @@ genes <- by(psl, psl$probeset, function(D) {
   if(length(unique(D$geneStrand))==1) {
     return(D$geneStrand[1])
   }
-  scores <- with(D, tapply(matches, geneStrand, sum, na.rm=TRUE))
+  ## take average by probe: if a probe matches multiple transcripts
+  ## for a same gene/strand, count it only once
+  geneStrandProbe <- with(D, paste(geneStrand, probe, sep="|"))
+  matches.avg <- with(D, tapply(matches, geneStrandProbe, mean))
+  geneStrand <- gsub("^(.+)\\|.+$", "\\1", names(matches.avg))
+  ## sum probe-averaged matches over gene/strands
+  scores <- tapply(matches.avg, geneStrand, sum, na.rm=TRUE)
   scores <- sort(scores, decreasing=TRUE)
+  ## assign the gene/strand only if there is a clear winner
   if(scores[1] > 2*scores[2]) {
     return(names(scores)[1])
   } else {
