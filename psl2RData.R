@@ -77,6 +77,7 @@ psl <- read.delim(pslFile, header=FALSE, colClasses=colClasses,
 
 psl <- within(psl, {
   probeset <- gsub("^(.*)\\|.*$", "\\1", qName)
+  probe <- gsub("^.*\\|(.*)$", "\\1", qName)
   geneID <- gsub("^.*\\|(.*)$", "\\1", tName)
   refSeq <- gsub("^(.*)\\|.*$", "\\1", tName)
   score <- matches / qSize
