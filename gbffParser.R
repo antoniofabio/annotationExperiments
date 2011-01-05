@@ -33,11 +33,9 @@ tail <- function() {
   }
 }
 indentation <- function() nchar(gsub("^( *?).*?$", "\\1", line))
-expectHead <- function(expected) {
-  whatIGot <- head()
-  if(whatIGot != expected) {
-    message("last parsed accession (possibly incomplete): ", lastAccession)
-    stop("line ", lineNum, ": expecting ", sQuote(expected), ", but got ", sQuote(whatIGot))
+getHead <- function(name, indentation) {
+  while(head() != name && length(line) > 0 && line != "//") { ## eventually skip interveening fields
+    block(indentation)
   }
 }
 
@@ -52,17 +50,16 @@ block <- function(currentIndentation) {
   }
   return(ans)
 }
+sanitize <- function(x) gsub("\t", " ", x)
 field <- function(name) {
   currentIndentation <- indentation()
-  while(head() != name && length(line) > 0 && line != "//") { ## eventually skip interveening fields
-    block(currentIndentation)
-  }
-  ans <- shQuote(paste(block(currentIndentation), collapse=" "))
+  getHead(name, currentIndentation)
+  ans <- sanitize(paste(block(currentIndentation), collapse=" "))
   return(ans)
 }
 
 origin <- function() {
-  expectHead("ORIGIN")
+  getHead("ORIGIN", 0)
   getLine()
   ans <- character(0)
   while(line != "//") {
@@ -85,7 +82,7 @@ feat.slash <- function() {
 }
 
 features <- function() {
-  expectHead("FEATURES")
+  getHead("FEATURES", 0)
   getLine() ## source
   getLine()
   dump(feat.slash()) ## organism
