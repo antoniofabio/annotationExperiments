@@ -1,5 +1,8 @@
 #! /usr/bin/env Rscript
 
+## TODO: sometimes still messing with the 'features' section
+## example: XM_003119198
+
 args <- commandArgs(trailingOnly=TRUE)
 cargs <- length(args)
 
@@ -74,9 +77,19 @@ origin <- function() {
 
 dump <- function(x) cat(x, "\t", sep="")
 
-feat.slash <- function() {
+feat.parse <- function() {
   ll <- tail()
-  ans <- gsub("/.+=\"(.*)\"$", "\\1", ll)
+  if(!grepl("^/", ll)) {
+    getLine()
+    return(character(0))
+  }
+  name <- gsub("^/(.*?)=\".*$", "\\1", ll)
+  value <- gsub("^/.*?=\"(.*?)\"?$", "\\1", ll)
+  if(name == "db_xref") {
+    name <- gsub("^(.+?):.*$", "\\1", value)
+    value <- gsub("^.+?:(.*)$", "\\1", value)
+  }
+  ans <- structure(value, names=name)
   getLine()
   return(ans)
 }
@@ -85,16 +98,13 @@ features <- function() {
   getHead("FEATURES", 0)
   getLine() ## source
   getLine()
-  dump(feat.slash()) ## organism
-  dump(feat.slash()) ## mol_type
-  feat.slash()       ## db_xref
-  dump(feat.slash()) ## chromosome
-  dump(feat.slash()) ## map
-  getLine()          ## gene
-  dump(feat.slash()) ## symbol
-  dump(feat.slash()) ## synonym
-  dump(feat.slash()) ## note
-  cat(gsub("^GeneID:(.*)$", "\\1", feat.slash())) ## GeneID
+  record <- character(0)
+  while(indentation() > 0) {
+    record <- c(record, feat.parse())
+  }
+  record <- record[c('organism', 'mol_type', 'chromosome', 'map', 'symbol',
+                     'synonym', 'note', 'GeneID')]
+  cat(record, sep="\t")
   while(indentation() > 0) {
     getLine()
   }
