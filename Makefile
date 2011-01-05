@@ -1,5 +1,5 @@
 TARGETS := $(patsubst ./%.fa,current/%.gene_info.RData,$(shell find . -name "*.fa")) \
-	$(patsubst %.gbff.gz,%.gene_info.RData,$(shell find current/refseq -name "*.gbff.gz"))
+	current/refseq/hum.gene_info.RData
 
 .PHONY: all show-targets
 
