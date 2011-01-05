@@ -17,8 +17,11 @@ dbFileName <- args[1]
 
 con <- file(dbFileName, "r")
 line <- NA_character_
+lineNum <- 0
+lastAccession <- NA_character_
 getLine <- function() {
   line <<- readLines(con, n=1, warn=FALSE)
+  lineNum <<- lineNum + 1
 }
 
 head <- function() gsub("^(.*?) +.*$", "\\1", line)
@@ -30,17 +33,15 @@ tail <- function() {
   }
 }
 indentation <- function() nchar(gsub("^( *?).*?$", "\\1", line))
-expectHead <- function(what) stopifnot(head() == what)
-
-fieldOneLine <- function(name) {
-  expectHead(name)
-  ans <- shQuote(tail())
-  getLine()
-  return(ans)
+expectHead <- function(expected) {
+  whatIGot <- head()
+  if(whatIGot != expected) {
+    message("last parsed accession (possibly incomplete): ", lastAccession)
+    stop("line ", lineNum, ": expecting ", sQuote(expected), ", but got ", sQuote(whatIGot))
+  }
 }
-fieldMultipleLines <- function(name) {
-  expectHead(name)
-  currentIndentation <- indentation()
+
+block <- function(currentIndentation) {
   ans <- tail()
   repeat {
     getLine()
@@ -49,7 +50,14 @@ fieldMultipleLines <- function(name) {
     }
     ans <- c(ans, tail())
   }
-  ans <- shQuote(paste(ans, collapse=" "))
+  return(ans)
+}
+field <- function(name) {
+  currentIndentation <- indentation()
+  while(head() != name && length(line) > 0) { ## eventually skip interveening fields
+    block(currentIndentation)
+  }
+  ans <- shQuote(paste(block(currentIndentation), collapse=" "))
   return(ans)
 }
 
@@ -96,16 +104,18 @@ features <- function() {
 }
 
 entry <- function() {
-  dump(fieldOneLine("LOCUS"))
-  dump(fieldOneLine("DEFINITION"))
-  dump(fieldOneLine("ACCESSION"))
-  dump(fieldOneLine("VERSION"))
-  dump(fieldOneLine("KEYWORDS"))
-  dump(fieldMultipleLines("SOURCE"))
-  while(head() == "REFERENCE") {
-    fieldMultipleLines("REFERENCE")
-  }
-  dump(fieldMultipleLines("COMMENT"))
+  dump(field("LOCUS"))
+  dump(field("DEFINITION"))
+  accession <- field("ACCESSION")
+  lastAccession <<- accession
+  dump(accession)
+  dump(field("VERSION"))
+  dump(field("KEYWORDS"))
+  dump(field("SOURCE"))
+  ## while(head() == "REFERENCE") {
+  ##   field("REFERENCE")
+  ## }
+  dump(field("COMMENT"))
   features()
   origin()
   cat("\n")
