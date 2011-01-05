@@ -102,8 +102,8 @@ features <- function() {
   while(indentation() > 0) {
     record <- c(record, feat.parse())
   }
-  record <- record[c('organism', 'mol_type', 'chromosome', 'map', 'symbol',
-                     'synonym', 'note', 'GeneID')]
+  record <- record[c('organism', 'mol_type', 'chromosome', 'map', 'gene',
+                     'gene_synonym', 'note', 'GeneID')]
   cat(record, sep="\t")
   while(indentation() > 0) {
     getLine()
