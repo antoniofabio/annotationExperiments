@@ -54,7 +54,7 @@ block <- function(currentIndentation) {
 }
 field <- function(name) {
   currentIndentation <- indentation()
-  while(head() != name && length(line) > 0) { ## eventually skip interveening fields
+  while(head() != name && length(line) > 0 && line != "//") { ## eventually skip interveening fields
     block(currentIndentation)
   }
   ans <- shQuote(paste(block(currentIndentation), collapse=" "))
