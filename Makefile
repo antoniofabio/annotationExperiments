@@ -1,5 +1,5 @@
 TARGETS := $(patsubst ./%.fa,current/%.gene_info.RData,$(shell find . -name "*.fa")) \
-	$(patsubst %.gbff,%.gene_info.RData,$(shell find current/refseq -name "*.gbff"))
+	$(patsubst %.gbff.gz,%.gene_info.RData,$(shell find current/refseq -name "*.gbff.gz"))
 
 .PHONY: all show-targets
 
@@ -11,7 +11,10 @@ all: $(TARGETS)
 show-targets:
 	@echo $(TARGETS)
 
-%.rfa: %.gbff gbff2fasta.R
+%.gbff.gz: %.gbff
+	gzip $<
+
+%.rfa: %.gbff.gz gbff2fasta.R
 	./gbff2fasta.R $< > $@
 
 current/%.psl: current/refseq/hum.rfa %.fa blat.R
@@ -23,5 +26,8 @@ current/%.psl.RData: current/%.psl psl2RData.R
 current/%.gene_info.RData: current/%.psl.RData bestgene.R
 	./bestgene.R $< $@
 
-current/refseq/%.gene_info.RData: current/refseq/%.gbff gbff2RData.R
-	./gbff2RData.R $< $@
+current/refseq/%.gene_info.tab.gz: current/refseq/%.gbff.gz
+	./gbffParser.R $< | gzip > $@
+
+current/refseq/%.gene_info.RData: current/refseq/%.gene_info.tab.gz gbffParser.R
+	Rscript -e 'gene_info <- read.delim("$<", header=TRUE, as.is=TRUE); save(gene_info, file="$@")'
