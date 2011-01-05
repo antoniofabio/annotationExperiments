@@ -4,7 +4,7 @@ args <- commandArgs(trailingOnly=TRUE)
 cargs <- length(args)
 
 if(cargs != 1) {
-  message("parses relevant infos from a refseq '.gbff' file,
+  message("parses relevant infos from a (eventually compressed) refseq '.gbff' file,
 and stores it into a tab-delimited file
 
 usage:
@@ -15,7 +15,7 @@ usage:
 
 dbFileName <- args[1]
 
-con <- file(dbFileName, "r")
+con <- gzfile(dbFileName, "r")
 line <- NA_character_
 lineNum <- 0
 lastAccession <- NA_character_

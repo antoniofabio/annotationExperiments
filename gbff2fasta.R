@@ -12,7 +12,7 @@ usage:
 ")
   quit("no", status=1)
 }
-con <- file(args[1], "r")
+con <- gzfile(args[1], "r")
 
 status <- 0
 while (length(line <- readLines(con, n = 1, warn = FALSE)) > 0) {
