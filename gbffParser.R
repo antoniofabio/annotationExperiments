@@ -1,8 +1,5 @@
 #! /usr/bin/env Rscript
 
-## TODO: sometimes still messing with the 'features' section
-## example: XM_003119198
-
 args <- commandArgs(trailingOnly=TRUE)
 cargs <- length(args)
 
