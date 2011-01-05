@@ -1,5 +1,6 @@
 TARGETS := $(patsubst ./%.fa,current/%.gene_info.RData,$(shell find . -name "*.fa")) \
 	current/refseq/hum.gene_info.RData
+DIRS := $(sort $(dir $(TARGETS)))
 
 .PHONY: all show-targets
 
@@ -7,6 +8,9 @@ TARGETS := $(patsubst ./%.fa,current/%.gene_info.RData,$(shell find . -name "*.f
 .SECONDARY:
 
 all: $(TARGETS)
+
+$(DIRS):
+	mkdir -p $(DIRS)
 
 show-targets:
 	@echo $(TARGETS)
@@ -17,7 +21,7 @@ show-targets:
 %.rfa: %.gbff.gz gbff2fasta.R
 	./gbff2fasta.R $< > $@
 
-current/%.psl: current/refseq/hum.rfa %.fa blat.R
+current/%.psl: current/refseq/hum.rfa %.fa blat.R | $(DIRS)
 	./blat.R $(wordlist 1,2,$^) $@
 
 current/%.psl.RData: current/%.psl psl2RData.R
