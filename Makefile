@@ -33,5 +33,5 @@ current/%.gene_info.RData: current/%.psl.RData bestgene.R
 current/refseq/%.gene_info.tab.gz: current/refseq/%.gbff.gz gbffParser.R
 	./gbffParser.R $< | gzip > $@
 
-current/refseq/%.gene_info.RData: current/refseq/%.gene_info.tab.gz
-	Rscript -e 'gene_info <- read.delim("$<", header=TRUE, as.is=TRUE); save(gene_info, file="$@")'
+current/refseq/%.gene_info.RData: current/refseq/%.gene_info.tab.gz gene_info.R
+	./gene_info.R $< $@
