@@ -39,5 +39,6 @@ Annot.custom <- subset(G, as.character(GeneID) %in% genes)
 rownames(Annot.custom) <- Annot.custom$GeneID
 Annot.custom <- Annot.custom[genes,]
 rownames(Annot.custom) <- names(genes)
+Annot.custom$strand <- strand[match(rownames(Annot.custom), names(genes))]
 
 save(Annot.custom, file=outputFile)
