@@ -15,5 +15,27 @@ rownames(A) <- A$ACCESSION
 
 gene_info <- A
 
+G <- unique(subset(gene_info, select=c(GeneID, symbol)))
+G <- cbind(G, subset(gene_info, select=c(synonym, DEFINITION, chromosome, map, size.bp, date, ACCESSION))[rownames(G), ])
 
-save(gene_info, file=outputFileName)
+disambiguate <- function(G, varName) {
+  v <- G[[varName]]
+  dup <- v[duplicated(v)]
+  if(length(dup) == 0) {
+    return(G)
+  }
+  A <- subset(G, !(v %in% dup))
+  B <- subset(G, v %in% dup)
+  B <- do.call(rbind, by(B, list(B[[varName]]),
+                         function(D) {
+                           if(!any(duplicated(D$date))) {
+                             D[which.max(D$date),]
+                           } else {
+                             D
+                           }
+                         }))
+  rbind(A, B)
+}
+G <- disambiguate(disambiguate(G, "GeneID"), "symbol")
+
+save(gene_info, G, file=outputFileName)
