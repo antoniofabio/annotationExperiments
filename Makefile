@@ -1,6 +1,10 @@
-TARGETS := $(patsubst ./%.fa,current/%.gene_info.RData,$(shell find . -name "*.fa")) \
-	$(patsubst ./%.fa,current/%.Annot.custom.RData,$(shell find . -name "*.fa")) \
-	$(patsubst ./%.fa,org.Hs.eg/%.Annot.custom.RData,$(shell find . -name "*.fa")) \
+AFFY_FASTA_COLON := $(shell find ./affy -name "*.fa.colon")
+AFFY := $(shell find ./affy -name "*.fa") $(patsubst ./%.fa.colon,./%.fa,$(AFFY_FASTA_COLON))
+AGILENT := $(shell find ./agilent -name "*.fa")
+ALL_FASTA := $(AFFY) $(AGILENT)
+TARGETS := $(patsubst ./%.fa,current/%.gene_info.RData,$(ALL_FASTA)) \
+	$(patsubst ./%.fa,current/%.Annot.custom.RData,$(ALL_FASTA)) \
+	$(patsubst ./%.fa,org.Hs.eg/%.Annot.custom.RData,$(ALL_FASTA)) \
 	current/refseq/hum.gene_info.RData
 DIRS := $(sort $(dir $(TARGETS)))
 
@@ -19,6 +23,9 @@ show-targets:
 
 %.gbff.gz: %.gbff
 	gzip $<
+
+%.fa: %.fa.colon
+	./fastaColon2fastaProper.R $< > $@
 
 %.rfa: %.gbff.gz gbff2fasta.R
 	./gbff2fasta.R $< > $@
